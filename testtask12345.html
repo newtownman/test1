@@ -3,59 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <title>설문/음성 실험</title>
-  <!-- jsPsych 및 Survey 플러그인 등 필수 라이브러리 로드 --> 
+  <!-- jsPsych 및 Survey 플러그인 등 필수 라이브러리 로드 -->
   <script src="https://unpkg.com/jspsych@8.2.1"></script>
   <script src="https://unpkg.com/@jspsych/plugin-survey@2.0.1"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-slider-response@2.1.2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
   <link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" rel="stylesheet" />
-  <!-- Firebase SDK (CDN) 불러오기 --> 
+  <!-- Firebase SDK (CDN) 불러오기 -->
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-   <style>
+  <style>
     html, body, .jspsych-content, .sv-root, .sv-question__title, .sv-string-viewer, input, select, button {
-      font-size: 1.25rem !important;
-      line-height: 1.5 !important;
+      font-size: 1.25rem !important; line-height: 1.5 !important;
     }
     #progress-indicator {
       position: fixed;
-      top: 12px;
-      right: 18px;
-      z-index: 9999;
-      font-size: 2.2em;
-      font-weight: bold;
-      color: #333;
-      background: rgba(255,255,255,0.8);
-      padding: 2px 10px;
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      pointer-events: none;
-      user-select: none;
+      top: 12px; right: 18px; z-index: 9999;
+      font-size: 2.2em; font-weight: bold; color: #333;
+      background: rgba(255,255,255,0.8); padding: 2px 10px; border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); pointer-events: none; user-select: none;
     }
-    .sv-description {
-      font-size: 0.98em;
-      color: #666;
-      margin-top: 4px;
-      margin-bottom: 8px;
-      white-space: pre-line;
-    }
-    .sd-action__title {
-      display: none !important;
-    }
-    .sv-action-bar-item.sv-action-bar-item--icon.sv-dots__item {
-      display: none !important;
-    }
-    .sd-action[title="Clear"] {
-      display: none !important;
-    }
-    .sv-clear-button,
-    .sv-dropdown__button {
-      display: none !important;
-    }
-    .sv_q_radiogroup {
-      display: block !important;
-    }
-    .sv_q_rating .sv-string-viewer {
-      display: none !important;
-    }
+    .sv-description { font-size: 0.98em; color: #666; margin-top: 4px; margin-bottom: 8px; white-space: pre-line;}
+    .sd-action__title, .sv-action-bar-item.sv-action-bar-item--icon.sv-dots__item, .sd-action[title="Clear"], .sv-clear-button, .sv-dropdown__button { display: none !important; }
+    .sv_q_radiogroup { display: block !important; }
+    .sv_q_rating .sv-string-viewer { display: none !important; }
   </style>
 </head>
 <body>
@@ -65,10 +36,24 @@
   // 자극 파일명 배열(실험에 맞게 수정)
   const stimuli = [
     "stim1.wav", "stim2.wav", "stim3.wav"
-    
   ];
 
-  // 설문 시작 전 응답 개수 체크(ex-30명 제한)
+  /********************************************************
+    1. [여기]에 본인 Firebase 콘솔에서 복사한 firebaseConfig 붙여넣기
+  ********************************************************/
+  const firebaseConfig = {
+    apiKey: "AIzaSyCBoY3ewkkl6VxFtkbFZkzuVolpIDnhtZI",
+    authDomain: "perception-test-kang.firebaseapp.com",
+    databaseURL: "https://perception-test-kang-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "perception-test-kang",
+    storageBucket: "perception-test-kang.firebasestorage.app",
+    messagingSenderId: "686724960923",
+    appId: "1:686724960923:web:3df683b4546dbafea82c3e"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // 설문 시작 전 응답 개수 체크(30명 제한)
   db.ref('responses').once('value').then(function(snapshot) {
     const responseCount = snapshot.numChildren();
     if (responseCount >= 30) {
@@ -84,189 +69,172 @@
     }
   });
 
-  /********************************************************
-    1. [여기]에 본인 Firebase 콘솔에서 복사한 firebaseConfig 붙여넣기
-    (Firebase 콘솔: 프로젝트 설정 > 앱 등록 정보 > SDK 설정에서 노션 문서 참조 후 복붙)
-  ********************************************************/
-  const firebaseConfig = {
-    apiKey: "AIzaSyCBoY3ewkkl6VxFtkbFZkzuVolpIDnhtZI",
-    authDomain: "perception-test-kang.firebaseapp.com",
-    databaseURL: "https://perception-test-kang-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "perception-test-kang",
-    storageBucket: "perception-test-kang.firebasestorage.app",
-    messagingSenderId: "686724960923",
-    appId: "1:686724960923:web:3df683b4546dbafea82c3e"
-  };
-  // Firebase 초기화 (필수) << 건드리지마셈
-  firebase.initializeApp(firebaseConfig);
-  // 실험 코드에서 DB 사용시 이 db 변수로 접근
-  const db = firebase.database();
+  function runExperiment() {
+    const jsPsych = initJsPsych({
+      on_finish: function() {
+        const trials = jsPsych.data.get().filter({trial_tag: 'audio_trial'}).values();
+        const account = jsPsych.data.get().filter({trial_tag: 'account_info'}).last(1).values()[0];
+        db.ref('responses').push({
+          trials: trials,
+          name: account?.ptp_name || "",
+          account: account?.ptp_account || "",
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
 
-  // --- 실험 타임라인(timeline) 배열 생성 ---<<건드리지마셈
-  let timeline = [];
+    const timeline = [];
 
-  // [1] 안내/동의 화면 (수정 가능)
-  timeline.push({
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `<h2>설문 안내</h2><p>실험 안내문구 등 ㅋㅋ하이요...</p>`,
-  choices: ['시작'],      // ← 쉼표 추가!
-  on_start: function() { ... }
-});
+    // 안내문
+    timeline.push({
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `<h2>설문 안내</h2><p>실험 안내문구 등 ㅋㅋ하이요...</p>`,
+      choices: ['시작'],
+      on_start: function() {
+        document.getElementById('progress-indicator').innerText = '';
+      }
+    });
 
-  // [2] 반복 trial 생성 (자극파일/질문 구성), 음성파일 순서 섞여있는 상태. 음성 듣는 task일테니 바로 밑에껀 건드리기 ㄴㄴ
+    // 자극 셔플
     const shuffled = jsPsych.randomization.shuffle(stimuli);
-    shuffled.forEach((audiofile, idx) => { ... });
+
+    shuffled.forEach((audiofile, idx) => {
+      
+      // 설문 문항 블록(jsPsychSurvey)
+      timeline.push({
+        type: jsPsychSurvey,
+        survey_json: {
+          elements: [
+            {
+              type: "html",
+              name: "audio_" + idx,
+              html: `
+                <p>음성 파일을 들어주세요.<br>실험입니다</p>
+                <audio controls>
+                  <source src="${audiofile}" type="audio/wav">
+                  브라우저가 오디오 태그를 지원하지 않습니다.
+                </audio>
+                <hr>
+              `
+            },
+            {
+              type: "text",
+              name: "age",
+              title: "몇 살처럼 들리나요?",
+              description: "(안녕",
+              inputType: "number",
+              min: 10,
+              max: 99,
+              isRequired: true,
+              requiredErrorText: "이 문항은 반드시 숫자로 입력해주세요.",
+              validators: [
+                {
+                  type: "numeric",
+                  text: "이 문항은 반드시 숫자로 입력해주세요."
+                }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "dialect_like",
+              title: "맞짱뜨까?",
+              choices: ["예", "아니요"],
+              isRequired: true,
+              requiredErrorText: "반드시 선택해주세요."
+            },
+            {
+              type: "radiogroup",
+              name: "dialect_region",
+              title: "어디서볼래?",
+              choices: ["옥상", "학교", "경찰서"],
+              isRequired: true,
+              requiredErrorText: "지역을 선택해주세요.",
+              visibleIf: "{dialect_like} = '예'"
+            },
+            {
+              type: "rating",
+              name: "naturalness",
+              title: "얼마나 싸움을 잘하시나요?",
+              rateMin: 1,
+              rateMax: 5,
+              isRequired: true,
+              minRateDescription: "",
+              maxRateDescription: "",
+              rateValues: [
+                { value: 1, text: "완전 못함" },
+                { value: 2, text: "조금 자신없음" },
+                { value: 3, text: "중간" },
+                { value: 4, text: "조금 쏌ㅋ" },
+                { value: 5, text: "매우 강함" }
+              ],
+              displayMode: "buttons",
+              colCount: 5,
+              requiredErrorText: "이 문항을 꼭 선택해주세요."
+            }
+          ]
+        },
+        button_label_finish: "다음",
+        data: { audio_file: audiofile, trial_tag: 'audio_trial' }
+      });
+
+      // (선택) 추가: 슬라이더 task
+      timeline.push({
+        type: 'html-slider-response',
+        stimulus: '<p>제가 만만한가요?</p>',
+        labels: ['전혀', '보통', '매우', '개무서움'],
+        min: 0,
+        max: 100,
+        slider_start: 50,
+        step: 1,
+        require_movement: true,
+        button_label: '다음',
+        data: { audio_file: audiofile, trial_tag: 'slider_trial' }
+      });
+
+      // (선택) 추가: 좌우키 응답 task
+      timeline.push({
+        type: 'html-keyboard-response',
+        stimulus: `
+          <p>아래 소리를 들어보고, 도끼: <b>왼쪽 SHIFT</b>, 토끼: <b>오른쪽 SHIFT</b> 키를 눌러 선택해 주세요.</p>
+          <audio id="stim-audio" controls autoplay>
+            <source src="${audiofile}" type="audio/wav">
+            브라우저가 오디오 태그를 지원하지 않습니다.
+          </audio>
+        `,
+        choices: ['shiftleft','shiftright'],
+        prompt: "<p>[왼쪽 SHIFT] = 도끼&nbsp;&nbsp;|&nbsp;&nbsp;[오른쪽 SHIFT] = 토끼</p>",
+        on_finish: function(data){
+          if(data.key_press === 16 && data.response === 'shiftleft'){
+            data.choice_label = "도끼";
+          } else if(data.key_press === 16 && data.response === 'shiftright'){
+            data.choice_label = "토끼";
+          }
+        },
+        data: { audio_file: audiofile, trial_tag: 'key_trial' }
+      });
+    });
+
+    // [3] 참가자 인적정보 등 입력
     timeline.push({
       type: jsPsychSurvey,
       survey_json: {
         elements: [
-          {
-            type: "html",
-            name: "audio_" + idx,
-            html: `
-              <p>음성 파일을 들어주세요.<br>실험입니다</p>
-              <audio controls>
-                <source src="${audiofile}" type="audio/wav">
-                브라우저가 오디오 태그를 지원하지 않습니다.
-              </audio>
-              <hr>
-            `
-          },
-          // 아래에 원하는 설문 문항 자유 추가 - 예시로 text, rating, radiogroup(객관식 문제 유형) 
-           {
-            type: "text",
-            name: "age",
-            title: "몇 살처럼 들리나요?",
-            description: "(안녕",
-            inputType: "number",
-            min: 10,
-            max: 99,
-            isRequired: true,
-            requiredErrorText: "이 문항은 반드시 숫자로 입력해주세요.",
-            validators: [
-              {
-                type: "numeric",
-                text: "이 문항은 반드시 숫자로 입력해주세요."
-              }
-            ]
-          },
-          {
-            type: "radiogroup",
-            name: "dialect_like",
-            title: "맞짱뜨까?",
-            choices: ["예", "아니요"],
-            isRequired: true,
-            requiredErrorText: "반드시 선택해주세요."
-          },
-          {
-            type: "radiogroup",
-            name: "dialect_region",
-            title: "어디서볼래?",
-            choices: ["옥상", "학교", "경찰서"],
-            isRequired: true,
-            requiredErrorText: "지역을 선택해주세요.",
-            visibleIf: "{dialect_like} = '예'"
-          },
-          {
-            type: "rating",
-            name: "naturalness",
-            title: "얼마나 싸움을 잘하시나요?",
-            rateMin: 1,
-            rateMax: 5,
-            isRequired: true,
-            minRateDescription: "",
-            maxRateDescription: "",
-            rateValues: [
-              { value: 1, text: "완전 못함" },
-              { value: 2, text: "조금 자신없음" },
-              { value: 3, text: "중간" },
-              { value: 4, text: "조금 쏌ㅋ" },
-              { value: 5, text: "매우 강함" }
-            ],
-            displayMode: "buttons",
-            colCount: 5,
-            requiredErrorText: "이 문항을 꼭 선택해주세요."
-          }
-          {
-            type: 'html-slider-response',
-            stimulus: '<p>제가 만만한가요?</p>',
-            labels: ['전혀', '보통', '매우', '개무서움'],
-            min: 0,
-            max: 100,
-            slider_start: 50,      // (시작 위치는 50, 즉 중앙)
-            step: 1,               // (1단위로만 이동)
-            require_movement: true, // ★ 반드시 슬라이더를 움직여야 계속 진행 가능
-            button_label: '다음'
-          }
-          timeline.push({ // 얘는 좌우 눌러서 반응보는 task
-  type: 'html-keyboard-response',
-  stimulus: `
-    <p>아래 소리를 들어보고, 도끼: <b>왼쪽 SHIFT</b>, 토끼: <b>오른쪽 SHIFT</b> 키를 눌러 선택해 주세요.</p>
-    <audio id="stim-audio" controls autoplay>
-      <source src="stim1.wav" type="audio/wav">
-      브라우저가 오디오 태그를 지원하지 않습니다.
-    </audio>
-  `,
-  choices: ['shiftleft','shiftright'], // Allowed keys; jsPsych key naming 규칙
-  prompt: "<p>[왼쪽 SHIFT] = 도끼&nbsp;&nbsp;|&nbsp;&nbsp;[오른쪽 SHIFT] = 토끼</p>",
-  on_finish: function(data){
-    if(data.key_press===16 && data.response==='shiftleft'){
-      data.choice_label = "도끼";
-    } else if(data.key_press===16 && data.response==='shiftright'){
-      data.choice_label = "토끼";
-    }
-    // trial 타임스템프, rt 등 자동 저장됨
-  }
-});
-
+          { type: "text", name: "ptp_name", title: "이름", isRequired: true },
+          { type: "text", name: "ptp_account", title: "계좌번호", isRequired: true }
         ]
-      };
-      button_label_finish: "다음",
-      data: { audio_file: audiofile, trial_tag: 'audio_trial' }
+      },
+      button_label_finish: "제출",
+      data: { trial_tag: "account_info" }
     });
-  });
 
-  // [3] 참가자 인적정보 등 입력
-  timeline.push({
-    type: jsPsychSurvey,
-    survey_json: {
-      elements: [
-        { type: "text", name: "ptp_name", title: "이름", isRequired: true },
-        { type: "text", name: "ptp_account", title: "계좌번호", isRequired: true }
-        // 추가 질문 원하는대로 자유 구성
-      ]
-    },
-    button_label_finish: "제출",
-    data: { trial_tag: "account_info" }
-  });
+    // [4] 설문 종료 안내
+    timeline.push({
+      type: jsPsychHtmlButtonResponse,
+      stimulus: "<h2>설문 완료</h2><p>참여해주셔서 감사합니다.</p>",
+      choices: ['종료']
+    });
 
-  // [4] 설문 종료 안내 (필수 아니지만 있는게 안전)
-  timeline.push({
-    type: jsPsychHtmlButtonResponse,
-    stimulus: "<h2>설문 완료</h2><p>참여해주셔서 감사합니다.</p>",
-    choices: ['종료']
-  });
-
-  /********************************************************
-    2. 실험 데이터 Firebase에 저장하는 구문(jsPsych 실행 선언부)
-  ********************************************************/
-  const jsPsych = initJsPsych({
-    on_finish: function() {
-      // trial별 저장 데이터
-      const trials = jsPsych.data.get().filter({trial_tag: 'audio_trial'}).values();
-      // 참가자 정보(마지막 제출 내역)
-      const account = jsPsych.data.get().filter({trial_tag: 'account_info'}).last(1).values()[0];
-      // Firebase responses 하위로 데이터 push
-      db.ref('responses').push({
-        trials: trials,
-        name: account?.name || "",
-        account: account?.account || "",
-        timestamp: new Date().toISOString()
-      });
-    }
-  });
-
-  // [실제 실험 실행 개시]
-  jsPsych.run(timeline);
+    jsPsych.run(timeline);
+  }
 </script>
 </html>
