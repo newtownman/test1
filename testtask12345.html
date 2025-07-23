@@ -127,7 +127,7 @@ function runExperiment() {
   const total_trials = stimuli.length;
 
     const intro = {
-      type: jsPsychHtmlButtonResponse,
+      type: 'html-button-response',
       stimulus: `
         <h2>설문 안내</h2>
         <p>이 설문은 여러 가지 음성을 듣고, 여러분이 어떻게 느끼는지 간단히 답하는 조사입니다.<br>
@@ -238,7 +238,7 @@ function runExperiment() {
       };
 
       timeline.push({
-        type: jsPsychSurvey,
+        type: 'survey',
         survey_json: survey_json,
         button_label_finish: "다음",
         data: { audio_file: audiofile, trial_tag: 'audio_trial' },
