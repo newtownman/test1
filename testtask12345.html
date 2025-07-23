@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>설문/음성 실험</title>
-  <!-- jsPsych 및 Survey 플러그인 등 필수 라이브러리 로드 --> 삭제 ㄴㄴ
+  <!-- jsPsych 및 Survey 플러그인 등 필수 라이브러리 로드 --> 
   <script src="https://unpkg.com/jspsych@8.2.1"></script>
   <script src="https://unpkg.com/@jspsych/plugin-survey@2.0.1"></script>
   <link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" rel="stylesheet" />
-  <!-- Firebase SDK (CDN) 불러오기 --> 삭제 ㄴㄴ
+  <!-- Firebase SDK (CDN) 불러오기 --> 
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
    <style>
@@ -89,14 +89,13 @@
     (Firebase 콘솔: 프로젝트 설정 > 앱 등록 정보 > SDK 설정에서 노션 문서 참조 후 복붙)
   ********************************************************/
   const firebaseConfig = {
-    apiKey: "본인_API_KEY",
-    authDomain: "프로젝트ID.firebaseapp.com",
-    databaseURL: "https://프로젝트ID-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "프로젝트ID",
-    storageBucket: "프로젝트ID.appspot.com",
-    messagingSenderId: "숫자",
-    appId: "앱ID",
-    measurementId: "측정ID(해당시)"
+    apiKey: "AIzaSyCBoY3ewkkl6VxFtkbFZkzuVolpIDnhtZI",
+    authDomain: "perception-test-kang.firebaseapp.com",
+    databaseURL: "https://perception-test-kang-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "perception-test-kang",
+    storageBucket: "perception-test-kang.firebasestorage.app",
+    messagingSenderId: "686724960923",
+    appId: "1:686724960923:web:3df683b4546dbafea82c3e"
   };
   // Firebase 초기화 (필수) << 건드리지마셈
   firebase.initializeApp(firebaseConfig);
