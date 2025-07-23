@@ -263,7 +263,7 @@ function runExperiment() {
     });
 
     timeline.push({
-      type: jsPsychSurvey,
+      type: 'survey',
       survey_json: {
         elements: [
           {
@@ -326,7 +326,7 @@ function runExperiment() {
     });
 
     timeline.push({
-      type: jsPsychHtmlButtonResponse,
+      type: 'html-button-response',
       stimulus: `
         <h2>설문 완료</h2>
         <p style="color:#b00; font-size:0.98em; margin-top:1em;">
