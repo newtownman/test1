@@ -109,10 +109,9 @@
   timeline.push({
     type: jsPsychHtmlButtonResponse,
     stimulus: `<h2>설문 안내</h2><p>실험 안내문구 등 ㅋㅋ하이요...</p>`,
-    choices: ['시작'],
-    on_start: function() {
-  document.getElementById('progress-indicator').innerText = '';}
-  });
+  choices: ['시작'],      // ← 쉼표 추가!
+  on_start: function() { ... }
+});
 
   // [2] 반복 trial 생성 (자극파일/질문 구성), 음성파일 순서 섞여있는 상태. 음성 듣는 task일테니 바로 밑에껀 건드리기 ㄴㄴ
     const shuffled = jsPsych.randomization.shuffle(stimuli);
