@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>설문/음성 실험</title>
-  <!-- jsPsych 및 Survey 플러그인 등 필수 라이브러리 로드 -->
+  <!-- jsPsych 및 주요 플러그인 불러오기 -->
   <script src="https://unpkg.com/jspsych@8.2.1"></script>
-  <script src="https://unpkg.com/@jspsych/plugin-survey@2.0.1"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-slider-response@2.1.2"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@2.2.0"></script>
   <link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" rel="stylesheet" />
-  <!-- Firebase SDK (CDN) 불러오기 -->
+  <!-- Firebase SDK (CDN) - compat 버전만 사용 -->
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
   <style>
-    html, body, .jspsych-content, .sv-root, .sv-question__title, .sv-string-viewer, input, select, button {
+    html, body, .jspsych-content, input, select, button {
       font-size: 1.25rem !important; line-height: 1.5 !important;
     }
     #progress-indicator {
@@ -22,31 +23,17 @@
       background: rgba(255,255,255,0.8); padding: 2px 10px; border-radius: 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08); pointer-events: none; user-select: none;
     }
-    .sv-description { font-size: 0.98em; color: #666; margin-top: 4px; margin-bottom: 8px; white-space: pre-line;}
-    .sd-action__title, .sv-action-bar-item.sv-action-bar-item--icon.sv-dots__item,
-    .sd-action[title="Clear"], .sv-clear-button, .sv-dropdown__button { display: none !important; }
-    .sv_q_radiogroup { display: block !important; }
-    .sv_q_rating .sv-string-viewer { display: none !important; }
   </style>
 </head>
 <body>
   <div id="progress-indicator"></div>
 </body>
 <script>
-// 자극 파일명 배열(실험에 맞게 수정)
-const stimuli = [
-  "stim1.wav", "stim2.wav", "stim3.wav"
-];
+const stimuli = ["stim1.wav", "stim2.wav", "stim3.wav"];
 
 /********************************************************
-  1. [여기]에 본인 Firebase 콘솔에서 복사한 firebaseConfig 붙여넣기
+  최신 Firebase config로 compat 방식 초기화!
 ********************************************************/
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCBoY3ewkkl6VxFtkbFZkzuVolpIDnhtZI",
   authDomain: "perception-test-kang.firebaseapp.com",
@@ -56,9 +43,6 @@ const firebaseConfig = {
   messagingSenderId: "686724960923",
   appId: "1:686724960923:web:3df683b4546dbafea82c3e"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
@@ -93,114 +77,67 @@ function runExperiment() {
   });
 
   const timeline = [];
-
   // 안내문
   timeline.push({
     type: 'html-button-response',
-    stimulus: `<h2>설문 안내</h2><p>실험 안내문구 등 ㅋㅋ하이요...</p>`,
+    stimulus: `<h2>설문 안내</h2>
+      <p>여러 음성파일을 듣고 문항에 답하는 실험입니다.<br>
+      "시작" 버튼을 누르면 계속 진행됩니다.</p>`,
     choices: ['시작'],
     on_start: function() {
       document.getElementById('progress-indicator').innerText = '';
     }
   });
 
-  // 자극 셔플
   const shuffled = jsPsych.randomization.shuffle(stimuli);
-
   shuffled.forEach((audiofile, idx) => {
-
-    // 설문 문항 블록(jsPsychSurvey)
+    // 메인 설문(HTML 폼 기반)
     timeline.push({
-      type: 'survey',
-      survey_json: {
-        elements: [
-          {
-            type: "html",
-            name: "audio_" + idx,
-            html: `
-              <p>음성 파일을 들어주세요.<br>실험입니다</p>
-              <audio controls>
-                <source src="${audiofile}" type="audio/wav">
-                브라우저가 오디오 태그를 지원하지 않습니다.
-              </audio>
-              <hr>
-            `
-          },
-          {
-            type: "text",
-            name: "age",
-            title: "몇 살처럼 들리나요?",
-            description: "(안녕",
-            inputType: "number",
-            min: 10,
-            max: 99,
-            isRequired: true,
-            requiredErrorText: "이 문항은 반드시 숫자로 입력해주세요.",
-            validators: [
-              {
-                type: "numeric",
-                text: "이 문항은 반드시 숫자로 입력해주세요."
-              }
-            ]
-          },
-          {
-            type: "radiogroup",
-            name: "dialect_like",
-            title: "맞짱뜨까?",
-            choices: ["예", "아니요"],
-            isRequired: true,
-            requiredErrorText: "반드시 선택해주세요."
-          },
-          {
-            type: "radiogroup",
-            name: "dialect_region",
-            title: "어디서볼래?",
-            choices: ["옥상", "학교", "경찰서"],
-            isRequired: true,
-            requiredErrorText: "지역을 선택해주세요.",
-            visibleIf: "{dialect_like} = '예'"
-          },
-          {
-            type: "rating",
-            name: "naturalness",
-            title: "얼마나 싸움을 잘하시나요?",
-            rateMin: 1,
-            rateMax: 5,
-            isRequired: true,
-            minRateDescription: "",
-            maxRateDescription: "",
-            rateValues: [
-              { value: 1, text: "완전 못함" },
-              { value: 2, text: "조금 자신없음" },
-              { value: 3, text: "중간" },
-              { value: 4, text: "조금 쏌ㅋ" },
-              { value: 5, text: "매우 강함" }
-            ],
-            displayMode: "buttons",
-            colCount: 5,
-            requiredErrorText: "이 문항을 꼭 선택해주세요."
-          }
-        ]
-      },
-      button_label_finish: "다음",
+      type: 'survey-html-form',
+      preamble: `
+        <b>${idx + 1} / ${stimuli.length}</b><br>
+        <audio controls>
+          <source src="${audiofile}" type="audio/wav">
+          [브라우저가 오디오 태그를 지원하지 않습니다.]
+        </audio>
+        <hr>`,
+      html: `
+        <label>몇 살처럼 들리나요? 
+          <input name="age" type="number" min="10" max="99" required>
+        </label><br><br>
+        <label>맞짱뜨까? 
+          <select name="dialect_like" required>
+            <option value="">선택</option>
+            <option>예</option>
+            <option>아니요</option>
+          </select>
+        </label><br><br>
+        <label>어디서볼래?
+          <select name="dialect_region" required>
+            <option value="">선택</option>
+            <option>옥상</option>
+            <option>학교</option>
+            <option>경찰서</option>
+          </select>
+        </label><br><br>
+        <label>얼마나 싸움을 잘하시나요? (1=완전 못함 ~ 5=매우 강함) 
+          <input type="range" name="naturalness" min="1" max="5" step="1" required>
+        </label>
+      `,
+      button_label: "다음",
       data: { audio_file: audiofile, trial_tag: 'audio_trial' }
     });
 
-    // (선택) 슬라이더 task
     timeline.push({
       type: 'html-slider-response',
       stimulus: '<p>제가 만만한가요?</p>',
       labels: ['전혀', '보통', '매우', '개무서움'],
-      min: 0,
-      max: 100,
-      slider_start: 50,
-      step: 1,
+      min: 0, max: 100, slider_start: 50, step: 1,
       require_movement: true,
       button_label: '다음',
       data: { audio_file: audiofile, trial_tag: 'slider_trial' }
     });
 
-    // (선택) 좌우키 응답 task
     timeline.push({
       type: 'html-keyboard-response',
       stimulus: `
@@ -223,20 +160,19 @@ function runExperiment() {
     });
   });
 
-  // [3] 참가자 인적정보 등 입력
+  // 참가자 인적정보 입력
   timeline.push({
-    type: 'survey',
-    survey_json: {
-      elements: [
-        { type: "text", name: "ptp_name", title: "이름", isRequired: true },
-        { type: "text", name: "ptp_account", title: "계좌번호", isRequired: true }
-      ]
-    },
-    button_label_finish: "제출",
+    type: 'survey-html-form',
+    preamble: '<b>본인 정보 입력</b>',
+    html: `
+      <label>이름: <input name="ptp_name" type="text" required></label><br>
+      <label>계좌번호: <input name="ptp_account" type="text" required></label>
+    `,
+    button_label: "제출",
     data: { trial_tag: "account_info" }
   });
 
-  // [4] 설문 종료 안내
+  // 설문/실험 종료 안내
   timeline.push({
     type: 'html-button-response',
     stimulus: "<h2>설문 완료</h2><p>참여해주셔서 감사합니다.</p>",
