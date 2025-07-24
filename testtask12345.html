@@ -239,7 +239,7 @@ function runExperiment() {
       };
 
       timeline.push({
-        type: 'survey',
+        type: 'survey-text',
         survey_json: survey_json,
         button_label_finish: "다음",
         data: { audio_file: audiofile, trial_tag: 'audio_trial' },
@@ -264,7 +264,7 @@ function runExperiment() {
     });
 
     timeline.push({
-      type: 'survey',
+      type: 'survey-text',
       survey_json: {
         elements: [
           {
