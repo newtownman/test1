@@ -135,7 +135,7 @@ timeline.push({
 });
 
     const shuffled = jsPsych.randomization.shuffle(stimuli);
-
+    const total_trials = shuffled.length; 
 
     shuffled.forEach((audiofile, idx) => {
       const survey_json = {
