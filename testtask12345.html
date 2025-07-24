@@ -65,7 +65,7 @@
 </body>
 <script>
   // Firebase 설정 및 초기화
-const stimuli = ["1_1.wav", "2_1.wav", "3_1.wav","4_1.wav","5_1.wav"];
+const stimuli = ["1_1.wav", "2_1.wav", "3_1.wav","4_1.wav","5_1.wav "];
 
 /********************************************************
   최신 Firebase config로 compat 방식 초기화!
@@ -136,7 +136,6 @@ timeline.push({
 
     const shuffled = jsPsych.randomization.shuffle(stimuli);
 
-    timeline.push(intro);
 
     shuffled.forEach((audiofile, idx) => {
       const survey_json = {
