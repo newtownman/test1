@@ -64,7 +64,7 @@
   <div id="progress-indicator"></div>
 </body>
 <script>
-  // Firebase 설정 및 초기화
+  // Firebase 설정 및 초기화ㅇㅇㅇ
 const stimuli = ["1_1.wav", "2_1.wav", "3_1.wav","4_1.wav","5_1.wav "];
 
 /********************************************************
@@ -144,7 +144,7 @@ timeline.push({
             type: "html",
             name: "audio_" + idx,
             html: `
-              <p><b>들어보이소.</b></p>
+              <p><b>마 들어봐라.</b></p>
               <audio controls>
                 <source src="${audiofile}" type="audio/wav">
                 브라우저가 오디오 태그를 지원하지 않습니다.
@@ -156,11 +156,11 @@ timeline.push({
           {
             type: "text",
             name: "age",
-            title: "오늘날씨몇도?",
+            title: "김정윤교수님 존경하는정도?",
             description: "(정확히 쓰이소)",
             inputType: "number",
-            min: 10,
-            max: 99,
+            min: 80,
+            max: 999,
             isRequired: true,
             requiredErrorText: "이 문항은 반드시 숫자로 입력해주세요.",
             validators: [
