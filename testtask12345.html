@@ -65,7 +65,7 @@
 </body>
 <script>
   // Firebase 설정 및 초기화
-const stimuli = ["stim1.wav", "stim2.wav", "stim3.wav"];
+const stimuli = ["1_1.wav", "2_1.wav", "3_1.wav","4_1.wav","5_1.wav"];
 
 /********************************************************
   최신 Firebase config로 compat 방식 초기화!
@@ -114,32 +114,25 @@ function runExperiment() {
 
   const timeline = [];
   // 안내문
-  timeline.push({
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `<h2>설문 안내</h2>
-      <p>여러 음성파일을 듣고 문항에 답하는 실험입니다.<br>
-      "시작" 버튼을 누르면 계속 진행됩니다.</p>`,
-    choices: ['시작'],
-    on_start: function() {
-      document.getElementById('progress-indicator').innerText = '';
-    }
-  });
-
-  const total_trials = stimuli.length;
-
-    const intro = {
-      type: jsPsychHtmlButtonResponse,
-      stimulus: `
-        <h2>설문 안내</h2>
-        <p>이 설문은 여러 가지 음성을 듣고, 여러분이 어떻게 느끼는지 간단히 답하는 조사입니다.<br>
-        총 60문항으로 이루어져 있고,<br>각 문항마다 주어진 음성 파일을 재생한 후 질문에 응답해주시면 됩니다.<br>반드시 헤드폰, 이어폰을 착용하고 해주시면 감사하겠습니다.<br>너무 고민 말고 처음 느낌대로 응답해주세요.</p>
-        <p>아래 "계속" 버튼을 누르면 시작합니다.<br>끝까지 참여하시면, 연락처를 기입하여 상품을 받으실 수 있습니다.</p>
-      `,
-      choices: ['계속'],
-      on_start: function() {
-        document.getElementById('progress-indicator').innerText = '';
-      }
-    };
+timeline.push({
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `
+    <h2>설문 안내</h2>
+    <p>
+      이 설문은 여러 가지 음성 파일을 듣고<br>
+      각 문항에 간단히 응답하는 실험입니다.<br><br>
+      총 60문항으로 이루어져 있으며,<br>
+      각 문항마다 제시되는 음성 파일을 반드시 헤드폰/이어폰으로 들은 뒤<br>
+      <b>처음 느낌대로 빠르게 응답</b>해 주세요.<br><br>
+      실험 완료 시 연락처를 입력하시면 소정의 상품을 받을 수 있습니다.<br><br>
+      준비가 되셨으면 아래 ‘시작’ 버튼을 눌러주세요.
+    </p>
+  `,
+  choices: ['시작'],
+  on_start: function() {
+    document.getElementById('progress-indicator').innerText = '';
+  }
+});
 
     const shuffled = jsPsych.randomization.shuffle(stimuli);
 
